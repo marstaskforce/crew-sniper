@@ -4,340 +4,664 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="FLICA Timer" />
-  <title>FLICA Open Time Calculator</title>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Crew Sniper" />
+  <title>Crew Sniper</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+    :root {
+      --green: #30d158;
+      --yellow: #ff9f0a;
+      --red: #ff453a;
+      --blue: #0a84ff;
+      --bg: #0f0f0f;
+      --card: #1c1c1e;
+      --card2: #2c2c2e;
+      --text: #f0f0f0;
+      --muted: #888;
+      --dim: #555;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-      background: #0f0f0f;
-      color: #f0f0f0;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100dvh;
-      padding: env(safe-area-inset-top, 20px) 20px env(safe-area-inset-bottom, 20px);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      padding: 0 0 80px;
     }
 
-    h1 {
-      font-size: 15px;
-      font-weight: 600;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding-top: 12px;
-      text-align: center;
-    }
-
-    .clock-bar {
-      background: #1c1c1e;
-      border-radius: 14px;
-      padding: 14px 18px;
+    /* HEADER */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #0f0f0fff;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 12px;
+      border-bottom: 0.5px solid #333;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .clock-label { font-size: 13px; color: #888; }
-    .clock-val { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; color: #f0f0f0; }
-    .clock-tz { font-size: 11px; color: #555; margin-top: 2px; text-align: right; }
+    .header-title {
+      font-size: 18px; font-weight: 700;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .header-title .bullseye {
+      width: 32px; height: 32px; flex-shrink: 0;
+    }
+    .header-title .name-stack { display: flex; flex-direction: column; line-height: 1.1; }
+    .header-title .app-name { font-size: 17px; font-weight: 700; color: #f0f0f0; letter-spacing: 0.5px; }
+    .header-title .app-tag { font-size: 9px; font-weight: 500; color: #cc2200; letter-spacing: 2px; text-transform: uppercase; }
+    .header-clock { font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--muted); }
 
-    .card {
-      background: #1c1c1e;
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 0;
+      padding: 12px 20px;
+      background: var(--bg);
+    }
+    .tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--muted);
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+    .tab.active { background: var(--card); color: var(--text); }
+
+    /* CONTENT */
+    .page { display: none; padding: 0 20px; }
+    .page.active { display: block; }
+
+    /* ADD PAIRING FORM */
+    .form-card {
+      background: var(--card);
       border-radius: 18px;
       padding: 20px;
+      margin-bottom: 16px;
     }
-
-    .card-label {
+    .form-title {
       font-size: 13px;
-      color: #888;
-      margin-bottom: 14px;
+      color: var(--muted);
       font-weight: 500;
-    }
-
-    .time-inputs {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .time-field {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      flex: 1;
-    }
-
-    .time-field span {
-      font-size: 11px;
-      color: #666;
+      margin-bottom: 14px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
-
-    .time-field input {
-      width: 100%;
-      background: #2c2c2e;
+    .form-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .form-field { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+    .form-field label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; }
+    .form-field input {
+      background: var(--card2);
       border: none;
-      border-radius: 12px;
-      color: #f0f0f0;
-      font-size: 36px;
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 22px;
       font-weight: 600;
       text-align: center;
-      padding: 14px 8px;
+      padding: 12px 8px;
       outline: none;
       font-variant-numeric: tabular-nums;
       -webkit-appearance: none;
-      appearance: none;
+      width: 100%;
+      font-family: inherit;
     }
-
-    .time-field input:focus {
-      background: #3a3a3c;
+    .form-field input.name-input {
+      font-size: 16px;
+      text-align: left;
+      padding: 12px 14px;
     }
-
-    .colon {
-      font-size: 36px;
-      font-weight: 300;
-      color: #555;
-      padding-bottom: 18px;
-    }
-
-    .hint-text {
-      font-size: 12px;
-      color: #555;
-      text-align: center;
-      margin-top: 12px;
-    }
-
-    .calc-btn {
-      background: #0a84ff;
+    .form-field input:focus { background: #3a3a3c; }
+    .colon { font-size: 28px; font-weight: 300; color: var(--dim); padding-top: 22px; }
+    .add-btn {
+      background: var(--blue);
       color: #fff;
       border: none;
       border-radius: 14px;
       width: 100%;
-      padding: 17px;
-      font-size: 17px;
+      padding: 15px;
+      font-size: 16px;
       font-weight: 600;
       font-family: inherit;
       cursor: pointer;
-      transition: opacity 0.15s;
+      margin-top: 4px;
     }
-    .calc-btn:active { opacity: 0.75; }
+    .add-btn:active { opacity: 0.75; }
+    .form-error { font-size: 12px; color: var(--red); margin-top: 8px; display: none; text-align: center; }
 
-    .error {
-      font-size: 13px;
-      color: #ff453a;
+    /* PAIRING CARDS */
+    .pairings-list { display: flex; flex-direction: column; gap: 12px; }
+    .empty-state {
       text-align: center;
-      display: none;
-    }
-
-    .result-card {
-      background: #1c1c1e;
-      border-radius: 18px;
-      padding: 20px;
-      border: 1.5px solid #0a84ff44;
-      display: none;
-    }
-    .result-card.visible { display: block; }
-
-    .result-label {
-      font-size: 12px;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 4px;
-    }
-
-    .result-time {
-      font-size: 44px;
-      font-weight: 700;
-      color: #0a84ff;
-      font-variant-numeric: tabular-nums;
-      line-height: 1.1;
-    }
-
-    .result-date {
+      color: var(--dim);
       font-size: 14px;
-      color: #666;
+      padding: 60px 20px;
+      line-height: 1.8;
+    }
+    .empty-state .big { font-size: 40px; margin-bottom: 8px; }
+
+    .pairing-card {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 16px;
+      border-left: 4px solid var(--green);
+      position: relative;
+      transition: border-color 0.5s;
+    }
+    .pairing-card.soon { border-left-color: var(--yellow); }
+    .pairing-card.urgent { border-left-color: var(--red); }
+    .pairing-card.done { border-left-color: var(--red); background: #2a1515; }
+
+    .pairing-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .pairing-name { font-size: 17px; font-weight: 700; }
+    .pairing-delete {
+      background: none;
+      border: none;
+      color: var(--dim);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 0 0 12px;
+      line-height: 1;
+      font-family: inherit;
+    }
+
+    .pairing-bid-time { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .pairing-bid-time span { color: var(--text); font-weight: 600; }
+    .pairing-bid-highlight { margin-bottom: 12px; }
+    .pairing-bid-highlight .bid-time { font-size: 36px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .pairing-bid-highlight .bid-date { font-size: 16px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+
+    .pairing-countdown {
+      font-size: 32px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.5px;
+    }
+    .pairing-countdown.green { color: var(--green); }
+    .pairing-countdown.yellow { color: var(--yellow); }
+    .pairing-countdown.red { color: var(--red); }
+    .pairing-countdown.done-text { color: var(--red); font-size: 22px; }
+
+    .pairing-status {
+      font-size: 12px;
+      color: var(--dim);
       margin-top: 4px;
     }
 
-    .divider {
+    .dot-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+    .dot.yellow { background: var(--yellow); }
+    .dot.red { background: var(--red); }
+
+    /* ALERT BANNER */
+    .alert-banner {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 999;
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 160px;
+      animation: flashbg 1s infinite alternate;
+    }
+    .alert-banner.warning { background: #7a4a00ee; backdrop-filter: blur(8px); }
+    .alert-banner.go { background: #7a0000ee; backdrop-filter: blur(8px); }
+    .alert-banner.visible { display: flex; }
+    .alert-title { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+    .alert-sub { font-size: 15px; color: #ffdddd; margin-bottom: 16px; }
+    .alert-dismiss {
+      background: #ffffff33;
       border: none;
-      border-top: 0.5px solid #333;
-      margin: 16px 0;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 10px 28px;
+      cursor: pointer;
+      font-family: inherit;
     }
 
-    .countdown-label {
+    @keyframes flashbg {
+      from { opacity: 0.92; }
+      to { opacity: 1; }
+    }
+
+    /* SETTINGS PAGE */
+    .settings-section { margin-bottom: 24px; }
+    .settings-label {
       font-size: 12px;
-      color: #888;
+      color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
+    }
+    .settings-card {
+      background: var(--card);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .settings-row {
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 0.5px solid #333;
     }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-row-label { font-size: 15px; }
+    .settings-row-val { font-size: 15px; color: var(--muted); }
 
-    .dot {
-      width: 8px;
-      height: 8px;
+    /* TOGGLE */
+    .toggle {
+      width: 51px; height: 31px;
+      background: #3a3a3c;
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--green); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 27px; height: 27px;
+      background: #fff;
       border-radius: 50%;
-      background: #30d158;
-      display: inline-block;
+      top: 2px; left: 2px;
+      transition: left 0.2s;
+      box-shadow: 0 1px 4px #0006;
     }
-    .dot.soon { background: #ff9f0a; }
-    .dot.urgent { background: #ff453a; }
+    .toggle.on::after { left: 22px; }
 
-    .countdown {
-      font-size: 34px;
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
-      color: #f0f0f0;
-    }
-
-    .hint {
-      font-size: 12px;
-      color: #555;
-      margin-top: 10px;
-    }
-
-    .now-flash {
-      font-size: 28px;
-      font-weight: 700;
-      color: #ff453a;
+    .tz-display {
+      font-size: 13px;
+      color: var(--muted);
+      padding: 10px 20px 0;
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <h1>FLICA Open Time</h1>
+<!-- ALERT BANNER -->
+<div class="alert-banner" id="alert-banner">
+  <div class="alert-title" id="alert-title">⚠️ 5 MIN WARNING</div>
+  <div class="alert-sub" id="alert-sub">Pairing opening soon!</div>
+  <button class="alert-dismiss" onclick="dismissAlert()">Dismiss</button>
+</div>
 
-  <div class="clock-bar">
-    <div>
-      <div class="clock-label">Current time</div>
-    </div>
-    <div style="text-align:right;">
-      <div class="clock-val" id="live-clock">--:-- --</div>
-      <div class="clock-tz" id="tz-note"></div>
+<!-- HEADER -->
+<div class="header">
+  <div class="header-title">
+    <svg class="bullseye" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="48" fill="#cc2200"/>
+      <circle cx="50" cy="50" r="40" fill="#f0f0f0"/>
+      <circle cx="50" cy="50" r="32" fill="#cc2200"/>
+      <circle cx="50" cy="50" r="22" fill="#f0f0f0"/>
+      <circle cx="50" cy="50" r="13" fill="#cc2200"/>
+      <circle cx="50" cy="50" r="5"  fill="#f0f0f0"/>
+      <line x1="50" y1="2"  x2="50" y2="30" stroke="#0f0f0f" stroke-width="2" stroke-opacity="0.25"/>
+      <line x1="50" y1="70" x2="50" y2="98" stroke="#0f0f0f" stroke-width="2" stroke-opacity="0.25"/>
+      <line x1="2"  y1="50" x2="30" y2="50" stroke="#0f0f0f" stroke-width="2" stroke-opacity="0.25"/>
+      <line x1="70" y1="50" x2="98" y2="50" stroke="#0f0f0f" stroke-width="2" stroke-opacity="0.25"/>
+    </svg>
+    <div class="name-stack">
+      <span class="app-name">CREW SNIPER</span>
+      <span class="app-tag">Bid First. Bid Fast.</span>
     </div>
   </div>
+  <div class="header-clock" id="live-clock">--:-- --</div>
+</div>
 
-  <div class="card">
-    <div class="card-label">Time pairing has been in open time</div>
-    <div class="time-inputs">
-      <div class="time-field">
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('tracker')">Tracker</button>
+  <button class="tab" onclick="showTab('add')">+ Add Pairing</button>
+  <button class="tab" onclick="showTab('settings')">Settings</button>
+</div>
+
+<!-- TRACKER PAGE -->
+<div class="page active" id="page-tracker">
+  <div class="pairings-list" id="pairings-list">
+    <div class="empty-state">
+      <div class="big">🎯</div>
+      No pairings tracked yet.<br>Tap <strong>+ Add Pairing</strong> to get started.
+    </div>
+  </div>
+</div>
+
+<!-- ADD PAIRING PAGE -->
+<div class="page" id="page-add">
+  <div class="form-card">
+    <div class="form-title">Pairing Details</div>
+
+    <div class="form-row">
+      <div class="form-field" style="flex:2;">
+        <label>Pairing / Flight Name</label>
+        <input type="text" id="pairing-name" class="name-input" placeholder="e.g. AA1234 or LAX-JFK" />
+      </div>
+    </div>
+
+    <div class="form-title" style="margin-top:4px;">Time in Open Time</div>
+    <div class="form-row" style="align-items:flex-end;">
+      <div class="form-field">
+        <label>Hours</label>
         <input type="number" id="elapsed-h" min="0" max="23" placeholder="17" inputmode="numeric" />
-        <span>Hours</span>
       </div>
       <div class="colon">:</div>
-      <div class="time-field">
+      <div class="form-field">
+        <label>Minutes</label>
         <input type="number" id="elapsed-m" min="0" max="59" placeholder="36" inputmode="numeric" />
-        <span>Minutes</span>
       </div>
     </div>
-    <p class="hint-text">Enter what FLICA shows — e.g. 17:36 → 17 hrs, 36 min</p>
+
+    <div class="form-error" id="form-error">Please fill in all fields correctly.</div>
+    <button class="add-btn" onclick="addPairing()">Add to Tracker</button>
   </div>
+</div>
 
-  <div class="error" id="err-msg">Please enter valid hours (0–23) and minutes (0–59).</div>
-
-  <button class="calc-btn" onclick="calculate()">Calculate Bid Window</button>
-
-  <div class="result-card" id="result-card">
-    <div class="result-label">Bid opens at</div>
-    <div class="result-time" id="result-time">--</div>
-    <div class="result-date" id="result-date"></div>
-    <hr class="divider" />
-    <div class="countdown-label">
-      <span class="dot" id="status-dot"></span>
-      Time until available
+<!-- SETTINGS PAGE -->
+<div class="page" id="page-settings">
+  <div class="tz-display" id="tz-display"></div>
+  <br>
+  <div class="settings-section">
+    <div class="settings-label">Alerts</div>
+    <div class="settings-card">
+      <div class="settings-row">
+        <div class="settings-row-label">5 Minute Warning</div>
+        <button class="toggle on" id="toggle-warning" onclick="toggleSetting('warning')"></button>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-label">Bid Open Alert</div>
+        <button class="toggle on" id="toggle-final" onclick="toggleSetting('final')"></button>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-label">Sound</div>
+        <button class="toggle on" id="toggle-sound" onclick="toggleSetting('sound')"></button>
+      </div>
     </div>
-    <div class="countdown" id="countdown">--:--:--</div>
-    <div class="hint" id="result-hint"></div>
   </div>
 
-  <script>
-    let targetMs = null;
-    let tickInterval = null;
+  <div class="settings-section">
+    <div class="settings-label">About</div>
+    <div class="settings-card">
+      <div class="settings-row">
+        <div class="settings-row-label">App</div>
+        <div class="settings-row-val">Crew Sniper</div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-label">Version</div>
+        <div class="settings-row-val">2.1</div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-label">Open Time Window</div>
+        <div class="settings-row-val">24 hours</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    function startClock() {
+<script>
+  // ── STATE ──────────────────────────────────────────────
+  let pairings = JSON.parse(localStorage.getItem('flica-pairings') || '[]');
+  let settings = JSON.parse(localStorage.getItem('flica-settings') || '{"warning":true,"final":true,"sound":true}');
+  let firedAlerts = JSON.parse(localStorage.getItem('flica-alerts') || '{}');
+  let tickInterval = null;
+  let audioCtx = null;
+
+  // ── CLOCK ──────────────────────────────────────────────
+  function startClock() {
+    try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      document.getElementById('tz-note').textContent = tz.replace(/_/g, ' ');
-      function tick() {
-        document.getElementById('live-clock').textContent =
-          new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true }).format(new Date());
-      }
-      tick();
-      setInterval(tick, 1000);
-    }
-
-    function calculate() {
-      const eh = parseInt(document.getElementById('elapsed-h').value);
-      const em = parseInt(document.getElementById('elapsed-m').value);
-      const errEl = document.getElementById('err-msg');
-
-      if (isNaN(eh) || isNaN(em) || eh < 0 || eh > 23 || em < 0 || em > 59) {
-        errEl.style.display = 'block';
-        return;
-      }
-      errEl.style.display = 'none';
-
+      document.getElementById('tz-display').textContent = '🌍 ' + tz.replace(/_/g,' ');
+    } catch(e){}
+    function tick() {
       const now = new Date();
-      const elapsedMs = (eh * 60 + em) * 60 * 1000;
-      const openedAt = new Date(now.getTime() - elapsedMs);
-      targetMs = openedAt.getTime() + 24 * 60 * 60 * 1000;
+      let h = now.getHours(), m = String(now.getMinutes()).padStart(2,'0');
+      let s = String(now.getSeconds()).padStart(2,'0');
+      const ap = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      document.getElementById('live-clock').textContent = `${h}:${m} ${ap}`;
+    }
+    tick(); setInterval(tick, 1000);
+  }
 
-      document.getElementById('result-time').textContent =
-        new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(new Date(targetMs));
-      document.getElementById('result-date').textContent =
-        new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date(targetMs));
+  // ── TABS ──────────────────────────────────────────────
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach((t,i) => {
+      t.classList.toggle('active', ['tracker','add','settings'][i] === name);
+    });
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+  }
 
-      document.getElementById('result-card').classList.add('visible');
+  // ── ADD PAIRING ───────────────────────────────────────
+  function addPairing() {
+    const name = document.getElementById('pairing-name').value.trim();
+    const eh = parseInt(document.getElementById('elapsed-h').value);
+    const em = parseInt(document.getElementById('elapsed-m').value);
+    const err = document.getElementById('form-error');
 
-      if (tickInterval) clearInterval(tickInterval);
-      countdownTick();
-      tickInterval = setInterval(countdownTick, 1000);
+    if (!name || isNaN(eh) || isNaN(em) || eh < 0 || eh > 23 || em < 0 || em > 59) {
+      err.style.display = 'block'; return;
+    }
+    err.style.display = 'none';
 
-      document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const now = Date.now();
+    const elapsedMs = (eh * 60 + em) * 60 * 1000;
+    const openedAt = now - elapsedMs;
+    const availableAt = openedAt + 24 * 60 * 60 * 1000;
+
+    const pairing = { id: Date.now(), name, availableAt };
+    pairings.push(pairing);
+    save();
+
+    // Clear inputs
+    document.getElementById('pairing-name').value = '';
+    document.getElementById('elapsed-h').value = '';
+    document.getElementById('elapsed-m').value = '';
+
+    showTab('tracker');
+    renderPairings();
+  }
+
+  // ── REMOVE PAIRING ────────────────────────────────────
+  function removePairing(id) {
+    pairings = pairings.filter(p => p.id !== id);
+    delete firedAlerts[id + '-warning'];
+    delete firedAlerts[id + '-final'];
+    save();
+    renderPairings();
+  }
+
+  // ── SAVE ──────────────────────────────────────────────
+  function save() {
+    localStorage.setItem('flica-pairings', JSON.stringify(pairings));
+    localStorage.setItem('flica-settings', JSON.stringify(settings));
+    localStorage.setItem('flica-alerts', JSON.stringify(firedAlerts));
+  }
+
+  // ── FORMAT TIME ───────────────────────────────────────
+  function fmtTime(ms) {
+    const d = new Date(ms);
+    let h = d.getHours(), m = String(d.getMinutes()).padStart(2,'0');
+    const ap = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${m} ${ap}`;
+  }
+  function fmtDate(ms) {
+    const d = new Date(ms);
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${days[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}`;
+  }
+
+  // ── RENDER PAIRINGS ───────────────────────────────────
+  function renderPairings() {
+    const list = document.getElementById('pairings-list');
+    if (pairings.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="big">✈️</div>No pairings tracked yet.<br>Tap <strong>+ Add Pairing</strong> to get started.</div>`;
+      return;
     }
 
-    function countdownTick() {
-      const diff = targetMs - Date.now();
-      const dot = document.getElementById('status-dot');
-      const hint = document.getElementById('result-hint');
-      const cdEl = document.getElementById('countdown');
+    list.innerHTML = pairings.map(p => {
+      const diff = p.availableAt - Date.now();
+      const isDone = diff <= 0;
+      const isUrgent = !isDone && diff < 30 * 60 * 1000;
+      const isSoon = !isDone && !isUrgent && diff < 2 * 60 * 60 * 1000;
 
-      if (diff <= 0) {
-        cdEl.innerHTML = '<span class="now-flash">GO — Bid NOW!</span>';
-        dot.className = 'dot urgent';
-        hint.textContent = 'The 24-hour window is up — click to grab it!';
-        clearInterval(tickInterval);
-        return;
+      let cardClass = isDone ? 'done' : isUrgent ? 'urgent' : isSoon ? 'soon' : '';
+      let dotClass = isDone ? 'red' : isUrgent ? 'red' : isSoon ? 'yellow' : '';
+      let cdClass = isDone ? 'done-text' : isUrgent ? 'red' : isSoon ? 'yellow' : 'green';
+      let cdText = isDone ? '🚨 BID NOW!' : fmtCountdown(diff);
+      let statusText = isDone ? 'Window is OPEN — get on FLICA!' :
+        isUrgent ? 'Under 30 min — stay ready!' :
+        isSoon ? 'Under 2 hours — set yourself a reminder!' :
+        'Tracking...';
+
+      return `
+        <div class="pairing-card ${cardClass}" id="card-${p.id}">
+          <div class="pairing-top">
+            <div class="pairing-name">${p.name}</div>
+            <button class="pairing-delete" onclick="removePairing(${p.id})">✕</button>
+          </div>
+          <div class="pairing-bid-highlight">
+            <div class="bid-time">${fmtTime(p.availableAt)}</div>
+            <div class="bid-date">📅 ${fmtDate(p.availableAt)}</div>
+          </div>
+          <div class="dot-row"><div class="dot ${dotClass}"></div><div class="pairing-countdown ${cdClass}" id="cd-${p.id}">${cdText}</div></div>
+          <div class="pairing-status" id="st-${p.id}">${statusText}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function fmtCountdown(diff) {
+    const total = Math.floor(diff / 1000);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    const pad = n => String(n).padStart(2,'0');
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  }
+
+  // ── TICK ──────────────────────────────────────────────
+  function tick() {
+    const now = Date.now();
+    pairings.forEach(p => {
+      const diff = p.availableAt - now;
+      const isDone = diff <= 0;
+      const isUrgent = !isDone && diff < 30 * 60 * 1000;
+      const isSoon = !isDone && !isUrgent && diff < 2 * 60 * 60 * 1000;
+
+      const card = document.getElementById('card-' + p.id);
+      const cd = document.getElementById('cd-' + p.id);
+      const st = document.getElementById('st-' + p.id);
+      if (!card) return;
+
+      card.className = 'pairing-card ' + (isDone ? 'done' : isUrgent ? 'urgent' : isSoon ? 'soon' : '');
+      const dotEl = card.querySelector('.dot');
+      if (dotEl) dotEl.className = 'dot ' + (isDone || isUrgent ? 'red' : isSoon ? 'yellow' : '');
+
+      if (cd) {
+        cd.className = 'pairing-countdown ' + (isDone ? 'done-text' : isUrgent ? 'red' : isSoon ? 'yellow' : 'green');
+        cd.textContent = isDone ? '🚨 BID NOW!' : fmtCountdown(diff);
+      }
+      if (st) {
+        st.textContent = isDone ? 'Window is OPEN — get on FLICA!' :
+          isUrgent ? 'Under 30 min — stay ready!' :
+          isSoon ? 'Under 2 hours — get ready!' : 'Tracking...';
       }
 
-      const totalSec = Math.floor(diff / 1000);
-      const h = Math.floor(totalSec / 3600);
-      const m = Math.floor((totalSec % 3600) / 60);
-      const s = totalSec % 60;
-      const pad = n => String(n).padStart(2, '0');
-      cdEl.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
-
-      if (diff < 30 * 60 * 1000) {
-        dot.className = 'dot urgent';
-        hint.textContent = 'Under 30 min — stay on FLICA and be ready!';
-      } else if (diff < 2 * 60 * 60 * 1000) {
-        dot.className = 'dot soon';
-        hint.textContent = 'Getting close — set a reminder for 5 min before.';
-      } else {
-        dot.className = 'dot';
-        hint.textContent = 'Countdown is live. Come back closer to bid time.';
+      // 5-min warning alert
+      const warnKey = p.id + '-warning';
+      if (settings.warning && !firedAlerts[warnKey] && diff > 0 && diff <= 5 * 60 * 1000) {
+        firedAlerts[warnKey] = true; save();
+        showAlert('warning', `⚠️ 5 MIN WARNING`, `${p.name} opens in less than 5 minutes!\nGet on FLICA now.`);
       }
-    }
 
-    startClock();
-  </script>
+      // Final alert
+      const finalKey = p.id + '-final';
+      if (settings.final && !firedAlerts[finalKey] && diff <= 0 && diff > -10000) {
+        firedAlerts[finalKey] = true; save();
+        showAlert('go', `🚨 BID NOW!`, `${p.name} is OPEN for bidding!\nClick it NOW.`);
+      }
+    });
+  }
+
+  // ── ALERTS ────────────────────────────────────────────
+  function showAlert(type, title, sub) {
+    const banner = document.getElementById('alert-banner');
+    document.getElementById('alert-title').textContent = title;
+    document.getElementById('alert-sub').textContent = sub;
+    banner.className = 'alert-banner visible ' + type;
+    if (settings.sound) playBeep(type);
+    // Vibrate if supported
+    if (navigator.vibrate) navigator.vibrate(type === 'go' ? [300,100,300,100,300] : [200,100,200]);
+  }
+
+  function dismissAlert() {
+    document.getElementById('alert-banner').className = 'alert-banner';
+  }
+
+  function playBeep(type) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const times = type === 'go' ? [0, 0.3, 0.6] : [0, 0.25];
+      times.forEach(t => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.value = type === 'go' ? 880 : 660;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime + t);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + t + 0.2);
+        osc.start(audioCtx.currentTime + t);
+        osc.stop(audioCtx.currentTime + t + 0.2);
+      });
+    } catch(e){}
+  }
+
+  // ── SETTINGS ──────────────────────────────────────────
+  function toggleSetting(key) {
+    settings[key] = !settings[key];
+    document.getElementById('toggle-' + key).className = 'toggle ' + (settings[key] ? 'on' : '');
+    save();
+  }
+
+  function applySettings() {
+    ['warning','final','sound'].forEach(k => {
+      document.getElementById('toggle-' + k).className = 'toggle ' + (settings[k] ? 'on' : '');
+    });
+  }
+
+  // ── INIT ──────────────────────────────────────────────
+  startClock();
+  applySettings();
+  renderPairings();
+  setInterval(tick, 1000);
+</script>
 </body>
 </html>
